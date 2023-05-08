@@ -1,0 +1,71 @@
+/* custom-style.css */
+
+/* Personnalisation des couleurs */
+:root {
+    --primary-color: #4285f4;
+    --secondary-color: #34a853;
+    --accent-color: #fbbc05;
+    --error-color: #ea4335;
+  }
+  
+  /* Style du formulaire */
+  .form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .form-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+  }
+  
+  .form-input {
+    margin-bottom: 20px;
+  }
+
+  
+  .form-input input,
+  .form-input textarea {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+  }
+  
+  .form-input textarea {
+    resize: none;
+  }
+  
+  .form-button {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .form-button:hover {
+    background-color: var(--secondary-color);
+  }
+  
+  .error-message {
+    color: var(--error-color);
+    margin-top: 10px;
+  }
+  
