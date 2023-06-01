@@ -1,5 +1,11 @@
-import Main from '@/components/main'
 import Head from 'next/head'
+import ChannelPage from './channel/:[channel_id]'
+import CreateChannelPage from './channel/create'
+import LoginForm from './login'
+import MessagePage from './message/:[user_id]'
+import ProfilePage from './profile'
+import SignupPage from './sign-up'
+
 
 export default function Home() {
   return (
@@ -11,8 +17,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
      
-      <Main/>
-
+      <SignupPage/>
 
 
     </>

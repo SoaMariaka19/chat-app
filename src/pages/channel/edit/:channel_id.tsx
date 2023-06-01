@@ -1,91 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
-import axios from 'axios';
-import { Form, Button, Spinner } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { Button, Form } from 'react-bootstrap';
+import { useRouter } from 'next/router';
+import { getChannel, updateChannel } from '../api/channel'; // Remplacez par l'import approprié pour récupérer et mettre à jour les informations du channel depuis votre API
+import { yupResolver } from '@hookform/resolvers/yup'; // Import du validateur yupResolver pour react-hook-form
 
-interface Channel {
-  id: string;
-  name: string;
-  type: string;
-  createdBy: string;
+interface ChannelFormData {
+  users: string[];
 }
 
-interface User {
-  id: string;
-  name: string;
-}
+const schema = yup.object().shape({
+  users: yup.array().of(yup.string()).min(1, 'Veuillez sélectionner au moins un utilisateur'),
+});
 
-const EditChannelPage: React.FC = () => {
-  const { channel_id } = useParams<{ channel_id: string }>();
-  const history = useHistory();
+const EditChannelPage = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm<ChannelFormData>({
+    resolver: yupResolver(schema),
+  });
 
-  const [channel, setChannel] = useState<Channel | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [channel, setChannel] = useState<any>(null);
+  const router = useRouter();
+
+  const { channel_id } = router.query;
 
   useEffect(() => {
-    // Récupérer les informations du channel depuis le backend
     const fetchChannel = async () => {
       try {
-        const response = await axios.get(`/api/channels/${channel_id}`);
-        setChannel(response.data.channel);
-        setUsers(response.data.users);
-        setLoading(false);
+        const channelData = await getChannel(channel_id as string); // Remplacez cette ligne avec votre code pour récupérer les informations du channel
+        setChannel(channelData);
       } catch (error) {
-        console.error('Erreur lors de la récupération des informations du channel :', error);
+        console.error('Erreur lors de la récupération des informations du channel', error);
       }
     };
 
     fetchChannel();
   }, [channel_id]);
 
-  const handleUserSelect = (userId: string) => {
-    setSelectedUsers((prevSelectedUsers) => {
-      if (prevSelectedUsers.includes(userId)) {
-        return prevSelectedUsers.filter((id) => id !== userId);
-      } else {
-        return [...prevSelectedUsers, userId];
-      }
-    });
-  };
-
-  const handleSave = async () => {
-    // Envoyer la requête de mise à jour du channel avec les nouveaux utilisateurs
+  const onSubmit = async (data: ChannelFormData) => {
     try {
-      await axios.put(`/api/channels/${channel_id}`, { users: selectedUsers });
-      history.push(`/channel/${channel_id}`); // Rediriger vers la page du channel après la modification
+      // Envoyer les données du formulaire vers le serveur pour mise à jour du channel
+      // Remplacez cette partie avec votre code pour mettre à jour les informations du channel avec les utilisateurs supplémentaires
+      const updatedChannel = {
+        id: channel.id,
+        users: [...channel.users, ...data.users],
+      };
+
+      // Exemple de requête vers l'API pour mettre à jour le channel
+      const response = await updateChannel(updatedChannel);
+
+      if (response.ok) {
+        // Rediriger l'utilisateur vers la page du channel édité
+        router.push(`/channel/${channel.id}`);
+      } else {
+        // Gérer les erreurs de mise à jour du channel
+        console.error('Erreur lors de la mise à jour du channel');
+      }
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du channel :', error);
+      console.error('Erreur lors de la mise à jour du channel', error);
     }
   };
 
-  if (loading) {
-    return <Spinner animation="border" role="status">
-      <span className="sr-only">Loading...</span>
-    </Spinner>; // Afficher un indicateur de chargement pendant la récupération des données
-  }
-
   return (
-    <div>
-      <h2>Modifier le channel : {channel?.name}</h2>
-      <div>
-        <h3>Ajouter de nouveaux utilisateurs</h3>
-        <ul>
-          {users.map((user) => (
-            <li key={user.id}>
-              <Form.Check
-                type="checkbox"
-                id={user.id}
-                label={user.name}
-                checked={selectedUsers.includes(user.id)}
-                onChange={() => handleUserSelect(user.id)}
-              />
-            </li>
-          ))}
-        </ul>
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <div className="p-4" style={{ maxWidth: '400px', width: '100%' }}>
+        <h2 className="text-center mb-4">Modifier le channel</h2>
+        {channel ? (
+          <Form name="editChannelForm" onSubmit={handleSubmit(onSubmit)}>
+            <Form.Group controlId="users">
+              <Form.Label>Utilisateurs à ajouter au channel:</Form.Label>
+              {channel.users.map((user: any) => (
+                <Form.Check
+                  key={user.id}
+                  type="checkbox"
+                  label={user.name}
+                  value={user.id}
+                  {...register('users')}
+                />
+              ))}
+              {errors.users && <Form.Text className="text-danger">{errors.users.message}</Form.Text>}
+            </Form.Group>
+  
+            <div className="d-grid">
+              <Button variant="primary" type="submit">Enregistrer</Button>
+            </div>
+          </Form>
+        ) : (
+          <div>Chargement du channel...</div>
+        )}
       </div>
-      <Button variant="primary" onClick={handleSave}>Enregistrer</Button>
     </div>
   );
 };
