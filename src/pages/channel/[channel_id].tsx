@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { Button, Form } from 'react-bootstrap';
+import { Button, Form, NavLink} from 'react-bootstrap';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 interface SendMessageFormData {
@@ -14,7 +14,7 @@ const schema = yup.object().shape({
 
 async function createMessage(messageData: SendMessageFormData) {
   try {
-    const response = await fetch('/api/messages', {
+    const response = await fetch('http://localhost:8080/message', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,11 +58,17 @@ const ChannelPage = ({ channelId }: { channelId: string }) => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
+    <div className="d-flex flex-column">
+      <div className="d-flex justify-content-end">
+        <NavLink href={`/channel/edit/${channelId}`}>
+          Edit Channel
+        </NavLink>
+      </div>
+
+    <div className="flex-grow-1 d-flex align-items-center justify-content-center">
       <div className="p-4" style={{ maxWidth: '400px', width: '100%' }}>
         <h2>Nom du channel</h2>
 
-        {/* Afficher la liste des messages du channel */}
 
         <Form name="sendMessageForm" onSubmit={handleSubmit(onSubmit)}>
           <Form.Group controlId="message">
@@ -72,10 +78,11 @@ const ChannelPage = ({ channelId }: { channelId: string }) => {
           </Form.Group>
 
           <div className="d-grid">
-            <Button variant="primary" type="submit">Envoyer</Button>
+            <Button variant="primary" type="submit" className='sendMessageButton'>Send Message</Button>
           </div>
         </Form>
       </div>
+    </div>
     </div>
   );
 };

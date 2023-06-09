@@ -1,9 +1,11 @@
 import React from 'react';
-import { useForm } from 'react-hook-form'; // Import du hook useForm de react-hook-form pour la gestion des formulaires
-import * as yup from 'yup'; // Import de yup pour la validation des schémas
-import { Button, Form, Card } from 'react-bootstrap'; // Import des composants Button, Form et Card de react-bootstrap
-import { useCookies } from 'react-cookie'; // Import du hook useCookies de react-cookie
-import { yupResolver } from '@hookform/resolvers/yup'; // Import du validateur yupResolver pour react-hook-form
+import { useForm } from 'react-hook-form'; 
+import * as yup from 'yup'; 
+import { Button, Form, Card } from 'react-bootstrap';
+import { useCookies } from 'react-cookie'; 
+import { yupResolver } from '@hookform/resolvers/yup'; 
+import Link from 'next/link';
+import router from 'next/router';
 
 interface FormData {
   email: string;
@@ -18,55 +20,61 @@ const schema = yup.object().shape({
 
 const LoginForm = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: yupResolver(schema), // Utilisation du yupResolver pour valider le schéma avec react-hook-form
+    resolver: yupResolver(schema), 
   });
 
-  const [cookies, setCookie] = useCookies(['token']); // Utilisation des cookies pour stocker le token
-
+  const [cookies, setCookie] = useCookies(['authToken']); 
   const onSubmit = async (data: FormData) => {
-    // Appeler votre endpoint d'authentification avec les données (email, password) ici
-    const response = await fetch('/votre-endpoint-auth', {
+    try{
+    const response = await fetch('http://localhost:8080/users/login', {
       method: 'POST',
+      body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
     });
 
-    const responseData = await response.json();
 
     if (response.ok) {
-      const { token } = responseData;
-      setCookie('token', token, { path: '/' }); // Stockage du token dans les cookies
-      // Rediriger l'utilisateur vers la page /profile
-      window.location.href = '/profile';
+      setCookie('authToken', (await response.json()).user.token)
+      router.push('/profile');
     } else {
       // Afficher le message d'erreur si l'authentification a échoué
-      console.error(responseData.error);
+      console.error('Erreur lors de l\'authentification');
     }
-  };
+}catch(error){
+  console.error('Erreur lors de l\'authentification');
+}}
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <Card style={{ width: '400px' }}>
         <Card.Header>
-          <h3>Authentification</h3> {/* Titre de la carte */}
+          <h3>Authentification</h3>
         </Card.Header>
         <Card.Body>
           <Form name="loginForm" onSubmit={handleSubmit(onSubmit)}>
             <Form.Group controlId="email">
-              <Form.Label>Email</Form.Label> {/* Label du champ "email" */}
-              <Form.Control type="email" {...register('email', { required: true })} /> {/* Champ de formulaire "email" avec enregistrement dans useForm */}
-              {errors.email && <Form.Text className="text-danger">{errors.email.message}</Form.Text>} {/* Affichage du message d'erreur si présent */}
+              <Form.Label>Email</Form.Label> 
+              <Form.Control type="email" {...register('email', { required: true })} /> 
+              {errors.email && <Form.Text className="text-danger">{errors.email.message}</Form.Text>}
             </Form.Group>
 
             <Form.Group controlId="password">
-              <Form.Label>Password</Form.Label> {/* Label du champ "password" */}
-              <Form.Control type="password" {...register('password', { required: true })} /> {/* Champ de formulaire "password" avec enregistrement dans useForm */}
-              {errors.password && <Form.Text className="text-danger">{errors.password.message}</Form.Text>} {/* Affichage du message d'erreur si présent */}
+              <Form.Label>Password</Form.Label> 
+              <Form.Control type="password" {...register('password', { required: true })} /> 
+              {errors.password && <Form.Text className="text-danger">{errors.password.message}</Form.Text>} 
             </Form.Group>
 
-            <Button type="submit">Se connecter</Button> {/* Bouton de soumission du formulaire */}
+            <Button type="submit" className="loginButton">Login</Button> 
+
+            <div style={{ marginTop: '10px', textAlign: 'center' }}>
+              Vous n'avez pas de compte ?{' '}
+              <Link href="/signup">
+                <Button variant="link">S'inscrire</Button>
+              </Link>
+            </div>
+            
           </Form>
         </Card.Body>
       </Card>

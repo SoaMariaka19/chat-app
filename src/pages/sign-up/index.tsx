@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { useCookies } from 'react-cookie';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const schema = yup.object().shape({
   name: yup.string().required('Le nom est requis'),
@@ -32,20 +33,18 @@ const Signup = () => {
 
 
   const onSubmit = async (data: FormData) => {
-    const accessToken = cookies.authToken;
 
     try {
       const response = await fetch('http://localhost:8080/users', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
-        setCookie('authToken', accessToken, { path: '/' });
+        setCookie('authToken', (await response.json()).user.token)
         router.push('/profile');
       } else {
         console.error('Erreur lors de la création de l\'utilisateur');
@@ -60,34 +59,42 @@ const Signup = () => {
     <div className="d-flex justify-content-center align-items-center vh-100">
       <div className="p-4" style={{ maxWidth: '400px', width: '100%' }}>
         <h2 className="text-center mb-4">Inscription</h2>
-        <Form onSubmit={handleSubmit(onSubmit)}>
+        <Form name="registrationForm" onSubmit={handleSubmit(onSubmit)}>
           <Form.Group controlId="name">
             <Form.Label>Nom:</Form.Label>
-            <Form.Control type="text" {...register('name')} /> {/* Champ de formulaire "name" avec enregistrement dans useForm */}
-            {errors.name && <Form.Text className="text-danger">{errors.name.message}</Form.Text>} {/* Affichage du message d'erreur si présent */}
+            <Form.Control type="text" {...register('name')} />
+            {errors.name && <Form.Text className="text-danger">{errors.name.message}</Form.Text>}
           </Form.Group>
 
           <Form.Group controlId="email">
             <Form.Label>Email:</Form.Label>
-            <Form.Control type="email" {...register('email')} /> {/* Champ de formulaire "email" avec enregistrement dans useForm */}
-            {errors.email && <Form.Text className="text-danger">{errors.email.message}</Form.Text>} {/* Affichage du message d'erreur si présent */}
+            <Form.Control type="email" {...register('email')} /> 
+            {errors.email && <Form.Text className="text-danger">{errors.email.message}</Form.Text>}
           </Form.Group>
 
           <Form.Group controlId="password">
             <Form.Label>Mot de passe:</Form.Label>
-            <Form.Control type="password" {...register('password')} /> {/* Champ de formulaire "password" avec enregistrement dans useForm */}
-            {errors.password && <Form.Text className="text-danger">{errors.password.message}</Form.Text>} {/* Affichage du message d'erreur si présent */}
+            <Form.Control type="password" {...register('password')} />
+            {errors.password && <Form.Text className="text-danger">{errors.password.message}</Form.Text>} 
           </Form.Group>
 
           <Form.Group controlId="confirmPassword">
             <Form.Label>Confirmer le mot de passe:</Form.Label>
-            <Form.Control type="password" {...register('confirmPassword')} /> {/* Champ de formulaire "confirmPassword" avec enregistrement dans useForm */}
-            {errors.confirmPassword && <Form.Text className="text-danger">{errors.confirmPassword.message}</Form.Text>} {/* Affichage du message d'erreur si présent */}
+            <Form.Control type="password" {...register('confirmPassword')} /> 
+            {errors.confirmPassword && <Form.Text className="text-danger">{errors.confirmPassword.message}</Form.Text>}
           </Form.Group>
 
           <div className="d-grid">
-            <Button variant="primary" type="submit">S'inscrire</Button> {/* Bouton de soumission du formulaire */}
+            <Button variant="primary" type="submit" className="registerButton">Register</Button>
           </div>
+
+          <div className="text-center mt-3">
+            Déjà inscrit ?{' '}
+            <Link href="/login">
+              <Button variant="link">Se connecter</Button>
+            </Link>
+          </div>
+          
         </Form>
       </div>
     </div>
